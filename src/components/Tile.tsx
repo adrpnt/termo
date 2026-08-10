@@ -28,7 +28,7 @@ export function Tile({
   onClick,
 }: TileProps) {
   const base =
-    "flex h-14 w-14 select-none items-center justify-center rounded-md border-2 text-3xl font-bold uppercase transition-all duration-150 sm:h-16 sm:w-16";
+    "flex h-[clamp(2.25rem,7.5dvh,4rem)] w-[clamp(2.25rem,7.5dvh,4rem)] select-none items-center justify-center rounded-md border-2 text-[clamp(1.25rem,3.6dvh,1.875rem)] font-bold uppercase transition-all duration-150";
 
   const emptyClasses =
     isFilled || isActive

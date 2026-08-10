@@ -37,7 +37,7 @@ export function Header({
   onOpenStats,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-(--color-border) bg-(--color-bg-translucent) backdrop-blur-md">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-(--color-border) bg-(--color-bg-translucent) backdrop-blur-md">
       <div className="mx-auto grid w-full grid-cols-3 items-center px-5 py-2 sm:px-4">
         <div className="justify-self-start">
           <IconButton onClick={onOpenHelp} label="Como jogar">

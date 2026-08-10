@@ -43,14 +43,14 @@ export function Board({
   });
 
   return (
-    <div className="flex flex-col items-center gap-2 px-3 py-5">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[1.1dvh] px-3 py-2">
       {rows.map((row, rowIndex) => {
         const isClickableRow = row.isCurrent && isPlaying;
         const isWinningRow = didWin && rowIndex === guesses.length - 1;
         return (
           <div
             key={rowIndex}
-            className={`flex gap-2 ${row.isCurrent && isShaking ? "animate-shake" : ""} ${
+            className={`flex gap-[1.1dvh] ${row.isCurrent && isShaking ? "animate-shake" : ""} ${
               isWinningRow ? "animate-win" : ""
             }`}
             style={isWinningRow ? { animationDelay: "1.3s" } : undefined}

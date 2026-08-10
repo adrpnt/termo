@@ -64,7 +64,7 @@ export default function App() {
   }, [addLetter, deleteLetter, submitGuess, setCursorPosition, cursor]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <Header
         mode={mode}
         onSwitchMode={switchMode}
@@ -72,7 +72,7 @@ export default function App() {
         onOpenStats={() => setIsStatsOpen(true)}
       />
 
-      <main className="flex flex-1 flex-col items-center justify-between gap-4 py-2">
+      <main className="flex min-h-0 flex-1 flex-col items-center justify-between gap-1 overflow-y-auto py-1">
         <Board
           guesses={guesses}
           evaluations={evaluations}
@@ -90,7 +90,7 @@ export default function App() {
           <button
             type="button"
             onClick={startRandomGame}
-            className="flex items-center gap-2 rounded-full bg-[var(--color-correct)] px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-white shadow-[var(--shadow-sm)] transition-all hover:brightness-110 active:scale-95"
+            className="flex shrink-0 items-center gap-2 rounded-full bg-(--color-correct) px-6 py-2 text-sm font-bold uppercase tracking-wide text-white shadow-(--shadow-sm) transition-all hover:brightness-110 active:scale-95"
           >
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path

@@ -15,6 +15,7 @@ export const SOLUTIONS: string[] = [
   "pulga",
   "touro",
   "duras",
+  "gomas",
   "zebra",
   "cobra",
   "lobos",

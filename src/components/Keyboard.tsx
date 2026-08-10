@@ -35,7 +35,7 @@ export function Keyboard({
           key={key}
           type="button"
           onClick={onEnter}
-          className={`${keyBase} h-14 min-w-13 bg-(--color-key) px-2 text-xs text-white hover:brightness-110 sm:min-w-16 sm:text-sm lg:h-16 lg:min-w-21 lg:px-3 lg:text-base`}
+          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-[10px] text-white hover:brightness-110 sm:min-w-12 sm:text-xs lg:min-w-16 lg:px-2 lg:text-sm`}
         >
           Enviar
         </button>
@@ -48,7 +48,7 @@ export function Keyboard({
           type="button"
           onClick={onBackspace}
           aria-label="Apagar"
-          className={`${keyBase} h-14 min-w-13 bg-(--color-key) px-2 text-lg text-white hover:brightness-110 sm:min-w-16 lg:h-16 lg:min-w-21 lg:text-2xl`}
+          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-base text-white hover:brightness-110 sm:min-w-12 lg:min-w-16 lg:text-xl`}
         >
           ⌫
         </button>
@@ -56,7 +56,7 @@ export function Keyboard({
     }
 
     const status = statuses[key];
-    const className = `${keyBase} h-14 flex-1 text-sm sm:text-base lg:h-16 lg:text-lg ${
+    const className = `${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] flex-1 text-xs sm:text-sm lg:text-base ${
       status
         ? statusClasses[status]
         : "bg-(--color-key) text-white hover:brightness-110"
@@ -75,11 +75,11 @@ export function Keyboard({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-1.5 px-1.5 pb-5 select-none sm:gap-2 lg:max-w-3xl lg:gap-3 lg:px-4 lg:pb-8">
+    <div className="mx-auto flex w-full max-w-md shrink-0 flex-col gap-[0.35dvh] px-1.5 pb-1.5 select-none sm:gap-1.5 lg:max-w-2xl lg:gap-2 lg:px-3 lg:pb-3">
       {ROWS.map((row, i) => (
         <div
           key={i}
-          className="flex justify-center gap-1.5 sm:gap-2 lg:gap-2.5"
+          className="flex justify-center gap-1 sm:gap-1.5 lg:gap-2"
         >
           {row.map(renderKey)}
         </div>
