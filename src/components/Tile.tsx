@@ -12,13 +12,17 @@ interface TileProps {
   onClick?: () => void;
 }
 
-export type TileSize = "lg" | "md";
+export type TileSize = "lg" | "md" | "sm";
 
 // "md" cabe dois tabuleiros lado a lado no celular: limita pela largura
 // (vw) além da altura (dvh).
+// "sm" cabe quatro tabuleiros: em grade 2x2 (dois de altura) até o breakpoint
+// lg e em uma linha só (quatro de largura) a partir dele, acompanhando o
+// layout do Game.
 const sizeClasses: Record<TileSize, string> = {
   lg: "h-[clamp(2.25rem,7.5dvh,4rem)] w-[clamp(2.25rem,7.5dvh,4rem)] text-[clamp(1.25rem,3.6dvh,1.875rem)]",
   md: "h-[min(6.2dvh,8vw,3.5rem)] w-[min(6.2dvh,8vw,3.5rem)] text-[min(3dvh,4.2vw,1.625rem)]",
+  sm: "h-[min(3.2dvh,8vw)] w-[min(3.2dvh,8vw)] text-[min(2dvh,4.2vw)] lg:h-[min(6dvh,3.4vw,3.25rem)] lg:w-[min(6dvh,3.4vw,3.25rem)] lg:text-[min(3dvh,1.8vw,1.5rem)]",
 };
 
 const statusClasses: Record<LetterStatus, string> = {

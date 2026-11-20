@@ -43,6 +43,9 @@ quantidade no seletor ao lado do botão de ajuda:
   quadro para de receber tentativas quando sua palavra é descoberta. No
   teclado, a metade esquerda de cada tecla mostra a dica do primeiro quadro e
   a direita, do segundo.
+- **4 palavras**, 9 tentativas. Os quadros ficam em grade 2x2 no celular e
+  em uma linha em telas largas. No teclado, cada tecla é dividida em quatro
+  partes na mesma posição dos quadros: quadrantes na grade, faixas na linha.
 
 Cada quantidade de palavras tem sua própria partida salva e suas próprias
 estatísticas, nos dois modos (Diário e Infinito).

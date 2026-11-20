@@ -4,7 +4,7 @@ export type GameMode = "daily" | "random";
 
 export type GameStatus = "playing" | "won" | "lost";
 
-export type BoardCount = 1 | 2;
+export type BoardCount = 1 | 2 | 4;
 
 export type ToastType = "info" | "success" | "error";
 

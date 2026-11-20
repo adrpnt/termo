@@ -27,15 +27,27 @@ const statusColors: Record<LetterStatus, string> = {
   absent: "var(--color-absent)",
 };
 
+function keyColor(status: LetterStatus | undefined): string {
+  return status ? statusColors[status] : "var(--color-key)";
+}
+
 /** Divide o fundo da tecla em faixas verticais, uma por tabuleiro, na ordem
  * dos tabuleiros (da esquerda para a direita). */
-function splitBackground(keyStatuses: (LetterStatus | undefined)[]): string {
+function stripesBackground(keyStatuses: (LetterStatus | undefined)[]): string {
   const step = 100 / keyStatuses.length;
-  const stops = keyStatuses.map((status, i) => {
-    const color = status ? statusColors[status] : "var(--color-key)";
-    return `${color} ${i * step}% ${(i + 1) * step}%`;
-  });
+  const stops = keyStatuses.map(
+    (status, i) => `${keyColor(status)} ${i * step}% ${(i + 1) * step}%`,
+  );
   return `linear-gradient(to right, ${stops.join(", ")})`;
+}
+
+/** Divide o fundo da tecla em quadrantes, na mesma posição dos quadros na
+ * grade 2x2: 1 em cima à esquerda, 2 em cima à direita, 3 embaixo à
+ * esquerda e 4 embaixo à direita. O cônico começa no topo e gira no sentido
+ * horário, por isso a ordem dos stops é 2, 4, 3, 1. */
+function quadrantsBackground(keyStatuses: (LetterStatus | undefined)[]): string {
+  const [first, second, third, fourth] = keyStatuses.map(keyColor);
+  return `conic-gradient(${second} 0 25%, ${fourth} 0 50%, ${third} 0 75%, ${first} 0)`;
 }
 
 const keyBase =
@@ -86,8 +98,16 @@ export function Keyboard({
       }`;
     } else {
       const allAbsent = keyStatuses.every((status) => status === "absent");
-      className = `${letterBase} hover:brightness-110 ${allAbsent ? "text-white/50" : "text-white"}`;
-      style = { background: splitBackground(keyStatuses) };
+      // Com 4 quadros a tecla segue o layout do Game: quadrantes na grade
+      // 2x2 e faixas quando os quadros ficam em linha (a partir do lg).
+      const isGrid = keyStatuses.length === 4;
+      className = `${letterBase} hover:brightness-110 ${allAbsent ? "text-white/50" : "text-white"} ${
+        isGrid ? "bg-(image:--key-grid) lg:bg-(image:--key-stripes)" : "bg-(image:--key-stripes)"
+      }`;
+      style = {
+        "--key-stripes": stripesBackground(keyStatuses),
+        ...(isGrid && { "--key-grid": quadrantsBackground(keyStatuses) }),
+      } as CSSProperties;
     }
 
     return (
