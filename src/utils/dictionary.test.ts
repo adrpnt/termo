@@ -8,6 +8,12 @@ describe("isValidWord", () => {
     expect(isValidWord("PRACA")).toBe(true);
   });
 
+  it("aceita plurais e femininos", () => {
+    for (const word of ["gatos", "patas", "rotas", "votos", "lerda", "itens", "anéis"]) {
+      expect(isValidWord(word)).toBe(true);
+    }
+  });
+
   it("recusa palavras fora do banco", () => {
     expect(isValidWord("xzxzx")).toBe(false);
   });

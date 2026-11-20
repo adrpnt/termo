@@ -5,9 +5,13 @@
 // também aceitas apenas como tentativa.
 // CONJUGACOES_EXTRA: formas verbais conjugadas (fonte externa, ver conjugacoesExtra.ts),
 // também aceitas apenas como tentativa.
+// FLEXOES_EXTRA: plurais e femininos gerados a partir do léxico (ver flexoesExtra.ts),
+// também aceitos apenas como tentativa.
+// As listas externas são geradas por scripts/build-words.ts (npm run build:words).
 
 import { LEXICO_EXTRA } from "./lexicoExtra";
 import { CONJUGACOES_EXTRA } from "./conjugacoesExtra";
+import { FLEXOES_EXTRA } from "./flexoesExtra";
 
 export const SOLUTIONS: string[] = [
   "turma",
@@ -321,5 +325,6 @@ export const ALL_WORDS: string[] = Array.from(
     ...EXTRA_VALID,
     ...LEXICO_EXTRA,
     ...CONJUGACOES_EXTRA,
+    ...FLEXOES_EXTRA,
   ]),
 );

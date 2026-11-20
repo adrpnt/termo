@@ -17,3 +17,6 @@ npm-debug.log*
 # Sistema
 .DS_Store
 *.local
+
+# Cache dos arquivos de origem do banco de palavras
+.cache
