@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { MAX_GUESSES } from "../utils/dictionary";
+import type { Variant } from "../utils/variants";
 
 export interface Stats {
   played: number;
@@ -11,45 +11,48 @@ export interface Stats {
   lastRecordedDayKey: string | null;
 }
 
-const STORAGE_KEY = "termo:stats";
-
-function defaultStats(): Stats {
+function defaultStats(maxGuesses: number): Stats {
   return {
     played: 0,
     wins: 0,
     currentStreak: 0,
     maxStreak: 0,
-    distribution: new Array(MAX_GUESSES).fill(0),
+    distribution: new Array(maxGuesses).fill(0),
     lastWinDayNumber: null,
     lastRecordedDayKey: null,
   };
 }
 
-function loadStats(): Stats {
+function statsStorageKey(variant: Variant): string {
+  return `${variant.storagePrefix}:stats`;
+}
+
+function loadStats(variant: Variant): Stats {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultStats();
+    const raw = localStorage.getItem(statsStorageKey(variant));
+    if (!raw) return defaultStats(variant.maxGuesses);
     const parsed = JSON.parse(raw) as Partial<Stats>;
-    return { ...defaultStats(), ...parsed };
+    return { ...defaultStats(variant.maxGuesses), ...parsed };
   } catch {
-    return defaultStats();
+    return defaultStats(variant.maxGuesses);
   }
 }
 
-function saveStats(stats: Stats) {
+function saveStats(variant: Variant, stats: Stats) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    localStorage.setItem(statsStorageKey(variant), JSON.stringify(stats));
   } catch {
     // localStorage indisponível (modo privado, etc.) — ignora silenciosamente.
   }
 }
 
-export function useStats() {
-  const [stats, setStats] = useState<Stats>(() => loadStats());
+export function useStats(variant: Variant) {
+  const { maxGuesses } = variant;
+  const [stats, setStats] = useState<Stats>(() => loadStats(variant));
 
   useEffect(() => {
-    saveStats(stats);
-  }, [stats]);
+    saveStats(variant, stats);
+  }, [variant, stats]);
 
   const recordResult = useCallback(
     (params: {
@@ -68,7 +71,7 @@ export function useStats() {
         let lastWinDayNumber = prev.lastWinDayNumber;
 
         if (params.won) {
-          const index = Math.min(params.attempts, MAX_GUESSES) - 1;
+          const index = Math.min(params.attempts, maxGuesses) - 1;
           if (index >= 0 && index < distribution.length) {
             distribution[index] += 1;
           }
@@ -92,7 +95,7 @@ export function useStats() {
         };
       });
     },
-    [],
+    [maxGuesses],
   );
 
   return { stats, recordResult };

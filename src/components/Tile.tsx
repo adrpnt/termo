@@ -8,8 +8,18 @@ interface TileProps {
   isCursor?: boolean;
   isClickable?: boolean;
   revealDelayMs?: number;
+  size?: TileSize;
   onClick?: () => void;
 }
+
+export type TileSize = "lg" | "md";
+
+// "md" cabe dois tabuleiros lado a lado no celular: limita pela largura
+// (vw) além da altura (dvh).
+const sizeClasses: Record<TileSize, string> = {
+  lg: "h-[clamp(2.25rem,7.5dvh,4rem)] w-[clamp(2.25rem,7.5dvh,4rem)] text-[clamp(1.25rem,3.6dvh,1.875rem)]",
+  md: "h-[min(6.2dvh,8vw,3.5rem)] w-[min(6.2dvh,8vw,3.5rem)] text-[min(3dvh,4.2vw,1.625rem)]",
+};
 
 const statusClasses: Record<LetterStatus, string> = {
   correct: "bg-[var(--color-correct)] border-[var(--color-correct)] text-white shadow-[var(--shadow-sm)]",
@@ -25,10 +35,10 @@ export function Tile({
   isCursor,
   isClickable,
   revealDelayMs,
+  size = "lg",
   onClick,
 }: TileProps) {
-  const base =
-    "flex h-[clamp(2.25rem,7.5dvh,4rem)] w-[clamp(2.25rem,7.5dvh,4rem)] select-none items-center justify-center rounded-md border-2 text-[clamp(1.25rem,3.6dvh,1.875rem)] font-bold uppercase transition-all duration-150";
+  const base = `flex ${sizeClasses[size]} select-none items-center justify-center rounded-md border-2 font-bold uppercase transition-all duration-150`;
 
   const emptyClasses =
     isFilled || isActive
