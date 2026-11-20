@@ -35,6 +35,18 @@ Existem dois modos, alternáveis no topo da tela:
   navegador (localStorage) e estatísticas/sequência de vitórias.
 - **Infinito** — palavra aleatória a cada partida, sem limite de jogos.
 
+Também dá para jogar com mais de uma palavra ao mesmo tempo, escolhendo a
+quantidade no seletor ao lado do botão de ajuda:
+
+- **1 palavra**, 6 tentativas.
+- **2 palavras**, 7 tentativas. Cada tentativa vale para os dois quadros; um
+  quadro para de receber tentativas quando sua palavra é descoberta. No
+  teclado, a metade esquerda de cada tecla mostra a dica do primeiro quadro e
+  a direita, do segundo.
+
+Cada quantidade de palavras tem sua própria partida salva e suas próprias
+estatísticas, nos dois modos (Diário e Infinito).
+
 ## Estrutura
 
 ```text
@@ -42,10 +54,11 @@ src/
   data/words.ts        banco de palavras (soluções + palavras extras aceitas)
   data/*Extra.ts       listas geradas a partir do fserb/pt-br
   utils/                normalização de acentos, dicionário, palavra do dia,
-                         avaliação de tentativas
+                         avaliação de tentativas, tabuleiros e variantes
+                         (quantidade de palavras e tentativas)
   hooks/useGame.ts       estado principal do jogo
   hooks/useStats.ts      estatísticas e sequência (streak)
-  components/            Board, Tile, Keyboard, modais, toasts
+  components/            Game, Board, Tile, Keyboard, modais, toasts
 scripts/
   build-words.ts         gera as listas de src/data/*Extra.ts
   wordlist.ts            regras de flexão e filtragem das listas

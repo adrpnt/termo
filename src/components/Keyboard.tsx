@@ -1,7 +1,9 @@
+import type { CSSProperties } from "react";
 import type { LetterStatus } from "../types";
 
 interface KeyboardProps {
-  statuses: Record<string, LetterStatus>;
+  /** Status das letras, um mapa por tabuleiro. */
+  statuses: Record<string, LetterStatus>[];
   onKey: (letter: string) => void;
   onEnter: () => void;
   onBackspace: () => void;
@@ -18,6 +20,23 @@ const statusClasses: Record<LetterStatus, string> = {
   present: "bg-[var(--color-present)] text-white",
   absent: "bg-[var(--color-absent)] text-white/50",
 };
+
+const statusColors: Record<LetterStatus, string> = {
+  correct: "var(--color-correct)",
+  present: "var(--color-present)",
+  absent: "var(--color-absent)",
+};
+
+/** Divide o fundo da tecla em faixas verticais, uma por tabuleiro, na ordem
+ * dos tabuleiros (da esquerda para a direita). */
+function splitBackground(keyStatuses: (LetterStatus | undefined)[]): string {
+  const step = 100 / keyStatuses.length;
+  const stops = keyStatuses.map((status, i) => {
+    const color = status ? statusColors[status] : "var(--color-key)";
+    return `${color} ${i * step}% ${(i + 1) * step}%`;
+  });
+  return `linear-gradient(to right, ${stops.join(", ")})`;
+}
 
 const keyBase =
   "flex items-center justify-center rounded-md font-bold uppercase shadow-[var(--shadow-sm)] transition-all duration-100 active:scale-95 active:brightness-90";
@@ -55,12 +74,21 @@ export function Keyboard({
       );
     }
 
-    const status = statuses[key];
-    const className = `${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] flex-1 text-xs sm:text-sm lg:text-base ${
-      status
-        ? statusClasses[status]
-        : "bg-(--color-key) text-white hover:brightness-110"
-    }`;
+    const keyStatuses = statuses.map((map) => map[key]);
+    const letterBase = `${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] flex-1 text-xs sm:text-sm lg:text-base`;
+    let className: string;
+    let style: CSSProperties | undefined;
+
+    if (keyStatuses.length === 1) {
+      const [status] = keyStatuses;
+      className = `${letterBase} ${
+        status ? statusClasses[status] : "bg-(--color-key) text-white hover:brightness-110"
+      }`;
+    } else {
+      const allAbsent = keyStatuses.every((status) => status === "absent");
+      className = `${letterBase} hover:brightness-110 ${allAbsent ? "text-white/50" : "text-white"}`;
+      style = { background: splitBackground(keyStatuses) };
+    }
 
     return (
       <button
@@ -68,6 +96,7 @@ export function Keyboard({
         type="button"
         onClick={() => onKey(key)}
         className={className}
+        style={style}
       >
         {key}
       </button>

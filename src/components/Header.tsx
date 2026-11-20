@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
-import type { GameMode } from "../types";
+import type { BoardCount, GameMode } from "../types";
+import { BOARD_COUNTS } from "../utils/variants";
 
 interface HeaderProps {
   mode: GameMode;
   onSwitchMode: (mode: GameMode) => void;
+  boardCount: BoardCount;
+  onChangeBoardCount: (boardCount: BoardCount) => void;
   onOpenHelp: () => void;
   onOpenStats: () => void;
 }
@@ -33,16 +36,46 @@ function IconButton({
 export function Header({
   mode,
   onSwitchMode,
+  boardCount,
+  onChangeBoardCount,
   onOpenHelp,
   onOpenStats,
 }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 shrink-0 border-b border-(--color-border) bg-(--color-bg-translucent) backdrop-blur-md">
-      <div className="mx-auto grid w-full grid-cols-3 items-center px-5 py-2 sm:px-4">
-        <div className="justify-self-start">
+      <div className="mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-5 py-2 sm:px-4">
+        <div className="flex items-center gap-1.5 justify-self-start sm:gap-2.5">
           <IconButton onClick={onOpenHelp} label="Como jogar">
             <span className="text-lg font-bold leading-none">?</span>
           </IconButton>
+
+          <div
+            role="group"
+            aria-label="Quantidade de palavras"
+            className="flex rounded-full border border-(--color-border) bg-black/20 p-0.5 text-xs font-bold tabular-nums"
+          >
+            {BOARD_COUNTS.map((count) => {
+              const label = count === 1 ? "1 palavra" : `${count} palavras`;
+              const isSelected = count === boardCount;
+              return (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => onChangeBoardCount(count)}
+                  aria-label={label}
+                  aria-pressed={isSelected}
+                  title={label}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                    isSelected
+                      ? "bg-white text-black shadow-(--shadow-sm)"
+                      : "text-white/65 hover:text-white"
+                  }`}
+                >
+                  {count}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex items-center justify-center gap-2 justify-self-center">
@@ -80,7 +113,7 @@ export function Header({
               fill="var(--color-absent)"
             />
           </svg>
-          <h1 className="text-2xl font-extrabold tracking-wide sm:text-3xl">
+          <h1 className="sr-only text-2xl font-extrabold tracking-wide sm:not-sr-only sm:text-3xl">
             Termo
           </h1>
         </div>

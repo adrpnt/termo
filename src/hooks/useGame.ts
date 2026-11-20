@@ -1,61 +1,47 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { canonicalWord, isValidWord, MAX_GUESSES, WORD_LENGTH } from "../utils/dictionary";
-import { getDailyWord, getDayKey, getDayNumber, getRandomWord } from "../utils/dailyWord";
-import { evaluateGuess, mergeStatus, type LetterStatus } from "../utils/evaluateGuess";
-import { normalize } from "../utils/normalize";
+import { canonicalWord, isValidWord, WORD_LENGTH } from "../utils/dictionary";
+import { getDailyWords, getDayKey, getDayNumber, getRandomWords } from "../utils/dailyWord";
+import { getBoards, getGameStatus, getKeyboardStatuses } from "../utils/boards";
+import type { Variant } from "../utils/variants";
 import type { GameMode, GameStatus, ToastMessage, ToastType } from "../types";
 import { useStats } from "./useStats";
 
-interface DailyState {
-  solution: string;
+interface GameState {
+  solutions: string[];
   guesses: string[];
-  status: GameStatus;
 }
 
-interface RandomState {
-  solution: string;
-  guesses: string[];
+interface SavedGame extends GameState {
   status: GameStatus;
 }
 
 const MODE_STORAGE_KEY = "termo:mode";
-const RANDOM_STORAGE_KEY = "termo:random";
 
-function dailyStorageKey(dayKey: string): string {
-  return `termo:daily:${dayKey}`;
+function dailyStorageKey(variant: Variant, dayKey: string): string {
+  return `${variant.storagePrefix}:daily:${dayKey}`;
 }
 
-function loadDailyState(dayKey: string): DailyState | null {
+function randomStorageKey(variant: Variant): string {
+  return `${variant.storagePrefix}:random`;
+}
+
+function loadGame(key: string, variant: Variant): GameState | null {
   try {
-    const raw = localStorage.getItem(dailyStorageKey(dayKey));
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw) as DailyState;
+    // Partidas salvas antes do modo de várias palavras guardavam `solution`.
+    const parsed = JSON.parse(raw) as Partial<SavedGame> & { solution?: string };
+    const solutions = parsed.solutions ?? (parsed.solution ? [parsed.solution] : null);
+    if (!solutions || solutions.length !== variant.boardCount) return null;
+    return { solutions, guesses: Array.isArray(parsed.guesses) ? parsed.guesses : [] };
   } catch {
     return null;
   }
 }
 
-function saveDailyState(dayKey: string, state: DailyState) {
+function saveGame(key: string, game: SavedGame) {
   try {
-    localStorage.setItem(dailyStorageKey(dayKey), JSON.stringify(state));
-  } catch {
-    // ignora se localStorage não estiver disponível
-  }
-}
-
-function loadRandomState(): RandomState | null {
-  try {
-    const raw = localStorage.getItem(RANDOM_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as RandomState;
-  } catch {
-    return null;
-  }
-}
-
-function saveRandomState(state: RandomState) {
-  try {
-    localStorage.setItem(RANDOM_STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(key, JSON.stringify(game));
   } catch {
     // ignora se localStorage não estiver disponível
   }
@@ -77,31 +63,35 @@ function saveMode(mode: GameMode) {
   }
 }
 
-export function useGame() {
-  const { stats, recordResult } = useStats();
+function loadGameForMode(mode: GameMode, variant: Variant, dayKey: string): GameState {
+  if (mode === "random") {
+    return (
+      loadGame(randomStorageKey(variant), variant) ?? {
+        solutions: getRandomWords(variant.boardCount),
+        guesses: [],
+      }
+    );
+  }
+  return (
+    loadGame(dailyStorageKey(variant, dayKey), variant) ?? {
+      solutions: getDailyWords(variant.boardCount),
+      guesses: [],
+    }
+  );
+}
+
+export function useGame(variant: Variant) {
+  const { boardCount, maxGuesses } = variant;
+  const { stats, recordResult } = useStats(variant);
   const [mode, setMode] = useState<GameMode>(() => loadMode());
 
   const dayKey = useMemo(() => getDayKey(), []);
   const dayNumber = useMemo(() => getDayNumber(), []);
 
-  const [solution, setSolution] = useState<string>(() => {
-    if (loadMode() === "random") {
-      return loadRandomState()?.solution ?? getRandomWord();
-    }
-    return loadDailyState(dayKey)?.solution ?? getDailyWord();
-  });
-  const [guesses, setGuesses] = useState<string[]>(() => {
-    if (loadMode() === "random") {
-      return loadRandomState()?.guesses ?? [];
-    }
-    return loadDailyState(dayKey)?.guesses ?? [];
-  });
-  const [status, setStatus] = useState<GameStatus>(() => {
-    if (loadMode() === "random") {
-      return loadRandomState()?.status ?? "playing";
-    }
-    return loadDailyState(dayKey)?.status ?? "playing";
-  });
+  const [game, setGame] = useState<GameState>(() =>
+    loadGameForMode(loadMode(), variant, dayKey),
+  );
+  const { solutions, guesses } = game;
   const [currentLetters, setCurrentLetters] = useState<string[]>(() =>
     new Array(WORD_LENGTH).fill(""),
   );
@@ -110,6 +100,10 @@ export function useGame() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastIdRef = useRef(0);
   const shakeTimeoutRef = useRef<number | undefined>(undefined);
+
+  const boards = useMemo(() => getBoards(solutions, guesses), [solutions, guesses]);
+  const status = getGameStatus(boards, guesses.length, maxGuesses);
+  const keyboardStatuses = useMemo(() => getKeyboardStatuses(boards), [boards]);
 
   const pushToast = useCallback((text: string, type: ToastType = "info") => {
     const id = ++toastIdRef.current;
@@ -129,42 +123,15 @@ export function useGame() {
     return () => window.clearTimeout(shakeTimeoutRef.current);
   }, []);
 
-  // Persiste o estado do desafio diário sempre que ele mudar. A solução é
-  // salva junto para o resultado (ex.: letras verdes) não depender de
-  // recalcular getDailyWord() — se o banco de palavras mudar de tamanho,
+  // Persiste a partida sempre que ela mudar, para não perder o progresso ao
+  // sair e voltar. As soluções são salvas junto para o resultado não depender
+  // de recalcular a palavra do dia: se o banco de palavras mudar de tamanho,
   // o índice do dia muda e a palavra recalculada pode não ser mais a mesma.
   useEffect(() => {
-    if (mode === "daily") {
-      saveDailyState(dayKey, { solution, guesses, status });
-    }
-  }, [mode, dayKey, solution, guesses, status]);
-
-  // Persiste o estado do modo infinito sempre que ele mudar, para não
-  // perder o progresso ao sair e voltar para a tela.
-  useEffect(() => {
-    if (mode === "random") {
-      saveRandomState({ solution, guesses, status });
-    }
-  }, [mode, solution, guesses, status]);
-
-  const solutionNormalized = normalize(solution);
-
-  const evaluations = useMemo(
-    () => guesses.map((guess) => evaluateGuess(normalize(guess), solutionNormalized)),
-    [guesses, solutionNormalized],
-  );
-
-  const keyboardStatuses = useMemo(() => {
-    const map: Record<string, LetterStatus> = {};
-    guesses.forEach((guess, rowIndex) => {
-      const letters = normalize(guess).split("");
-      const evaluation = evaluations[rowIndex];
-      letters.forEach((letter, i) => {
-        map[letter] = mergeStatus(map[letter], evaluation[i]);
-      });
-    });
-    return map;
-  }, [guesses, evaluations]);
+    const key =
+      mode === "daily" ? dailyStorageKey(variant, dayKey) : randomStorageKey(variant);
+    saveGame(key, { solutions, guesses, status });
+  }, [mode, variant, dayKey, solutions, guesses, status]);
 
   const resetInput = useCallback(() => {
     setCurrentLetters(new Array(WORD_LENGTH).fill(""));
@@ -172,30 +139,18 @@ export function useGame() {
   }, []);
 
   const startRandomGame = useCallback(() => {
-    setSolution((prev) => getRandomWord(prev));
-    setGuesses([]);
-    setStatus("playing");
+    setGame((prev) => ({ solutions: getRandomWords(boardCount, prev.solutions), guesses: [] }));
     resetInput();
-  }, [resetInput]);
+  }, [boardCount, resetInput]);
 
   const switchMode = useCallback(
     (nextMode: GameMode) => {
       setMode(nextMode);
       saveMode(nextMode);
       resetInput();
-      if (nextMode === "daily") {
-        const saved = loadDailyState(dayKey);
-        setSolution(saved?.solution ?? getDailyWord());
-        setGuesses(saved?.guesses ?? []);
-        setStatus(saved?.status ?? "playing");
-      } else {
-        const saved = loadRandomState();
-        setSolution(saved?.solution ?? getRandomWord());
-        setGuesses(saved?.guesses ?? []);
-        setStatus(saved?.status ?? "playing");
-      }
+      setGame(loadGameForMode(nextMode, variant, dayKey));
     },
-    [dayKey, resetInput],
+    [variant, dayKey, resetInput],
   );
 
   const setCursorPosition = useCallback(
@@ -258,23 +213,24 @@ export function useGame() {
       return;
     }
 
-    const canonical = canonicalWord(currentGuess);
-    const nextGuesses = [...guesses, canonical];
-    setGuesses(nextGuesses);
+    const nextGuesses = [...guesses, canonicalWord(currentGuess)];
+    setGame({ solutions, guesses: nextGuesses });
     resetInput();
 
-    const won = normalize(canonical) === solutionNormalized;
+    const nextBoards = getBoards(solutions, nextGuesses);
+    const nextStatus = getGameStatus(nextBoards, nextGuesses.length, maxGuesses);
     const attempts = nextGuesses.length;
 
-    if (won) {
-      setStatus("won");
-      pushToast(attempts === 1 ? "Genial!" : "Parabéns!", "success");
+    if (nextStatus === "won") {
+      pushToast(attempts === boardCount ? "Genial!" : "Parabéns!", "success");
       if (mode === "daily") {
         recordResult({ won: true, attempts, dayKey, dayNumber });
       }
-    } else if (attempts >= MAX_GUESSES) {
-      setStatus("lost");
-      pushToast(solution.toUpperCase(), "info");
+    } else if (nextStatus === "lost") {
+      const missed = nextBoards
+        .filter((board) => !board.isSolved)
+        .map((board) => board.solution.toUpperCase());
+      pushToast(missed.join(" · "), "info");
       if (mode === "daily") {
         recordResult({ won: false, attempts, dayKey, dayNumber });
       }
@@ -282,9 +238,10 @@ export function useGame() {
   }, [
     currentLetters,
     guesses,
+    solutions,
     status,
-    solution,
-    solutionNormalized,
+    boardCount,
+    maxGuesses,
     mode,
     dayKey,
     dayNumber,
@@ -302,9 +259,7 @@ export function useGame() {
     mode,
     switchMode,
     startRandomGame,
-    solution,
-    guesses,
-    evaluations,
+    boards,
     currentLetters,
     cursor,
     setCursorPosition,
@@ -318,6 +273,6 @@ export function useGame() {
     dismissToast,
     stats,
     wordLength: WORD_LENGTH,
-    maxGuesses: MAX_GUESSES,
+    maxGuesses,
   };
 }

@@ -33,12 +33,45 @@ export function getDailyWord(date: Date = new Date()): string {
   return SOLUTIONS[getDailyWordIndex(date)];
 }
 
-/** Palavra aleatória para o modo infinito. */
-export function getRandomWord(exclude?: string): string {
-  if (SOLUTIONS.length <= 1) return SOLUTIONS[0];
-  let word = SOLUTIONS[Math.floor(Math.random() * SOLUTIONS.length)];
-  while (exclude && word === exclude) {
-    word = SOLUTIONS[Math.floor(Math.random() * SOLUTIONS.length)];
+/** Gerador pseudoaleatório determinístico (mulberry32) a partir de uma semente. */
+function seededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
+/** Sorteia `count` palavras distintas do banco, fora das excluídas. */
+function pickWords(count: number, random: () => number, exclude: string[]): string[] {
+  const available = SOLUTIONS.filter((word) => !exclude.includes(word));
+  const pool = available.length >= count ? available : [...SOLUTIONS];
+  const picked: string[] = [];
+  while (picked.length < count) {
+    const index = Math.floor(random() * pool.length);
+    picked.push(pool[index]);
+    pool.splice(index, 1);
   }
-  return word;
+  return picked;
+}
+
+/**
+ * Palavras do dia para uma partida com `count` tabuleiros. Com 1 tabuleiro é
+ * a palavra do dia de sempre. Com mais, as palavras são sorteadas de forma
+ * determinística pela data, todas diferentes entre si e da palavra do dia do
+ * modo simples.
+ */
+export function getDailyWords(count: number, date: Date = new Date()): string[] {
+  const dailyWord = getDailyWord(date);
+  if (count === 1) return [dailyWord];
+  const random = seededRandom(getDayNumber(date) * 1_000 + count);
+  return pickWords(count, random, [dailyWord]);
+}
+
+/** Palavras aleatórias para o modo infinito, evitando repetir as da partida anterior. */
+export function getRandomWords(count: number, exclude: string[] = []): string[] {
+  return pickWords(count, Math.random, exclude);
 }

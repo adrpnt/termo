@@ -20,3 +20,6 @@ npm-debug.log*
 
 # Cache dos arquivos de origem do banco de palavras
 .cache
+
+# Cache incremental do TypeScript
+*.tsbuildinfo

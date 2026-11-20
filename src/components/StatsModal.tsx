@@ -3,10 +3,11 @@ import type { Stats } from "../hooks/useStats";
 
 interface StatsModalProps {
   stats: Stats;
+  boardCount: number;
   onClose: () => void;
 }
 
-export function StatsModal({ stats, onClose }: StatsModalProps) {
+export function StatsModal({ stats, boardCount, onClose }: StatsModalProps) {
   const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
   const maxDistribution = Math.max(1, ...stats.distribution);
 
@@ -44,7 +45,9 @@ export function StatsModal({ stats, onClose }: StatsModalProps) {
       </div>
 
       <p className="mt-6 text-center text-xs text-[var(--color-text-faint)]">
-        As estatísticas consideram apenas a palavra do dia.
+        {boardCount === 1
+          ? "As estatísticas consideram apenas a palavra do dia."
+          : `As estatísticas consideram apenas as palavras do dia do modo de ${boardCount} palavras.`}
       </p>
     </Modal>
   );
