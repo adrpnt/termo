@@ -43,7 +43,7 @@ export function Header({
 }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 shrink-0 border-b border-(--color-border) bg-(--color-bg-translucent) backdrop-blur-md">
-      <div className="mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-5 py-2 sm:px-4">
+      <div className="mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2 sm:px-4">
         <div className="flex items-center gap-1.5 justify-self-start sm:gap-2.5">
           <IconButton onClick={onOpenHelp} label="Como jogar">
             <span className="text-lg font-bold leading-none">?</span>

@@ -20,6 +20,7 @@ interface BoardProps {
 const gapClasses: Record<TileSize, string> = {
   lg: "gap-[1.1dvh]",
   md: "gap-[min(0.8dvh,1.2vw)]",
+  sm: "gap-[min(0.45dvh,1vw)] lg:gap-[min(0.7dvh,0.5vw)]",
 };
 
 export function Board({

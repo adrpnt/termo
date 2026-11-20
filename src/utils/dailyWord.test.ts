@@ -19,6 +19,13 @@ describe("getDailyWords", () => {
     }
   });
 
+  it("sorteia quatro palavras distintas no modo de quatro palavras", () => {
+    const words = getDailyWords(4, date);
+    expect(words).toHaveLength(4);
+    expect(new Set(words).size).toBe(4);
+    expect(words).not.toContain(getDailyWord(date));
+  });
+
   it("devolve as mesmas palavras no mesmo dia", () => {
     expect(getDailyWords(2, new Date(2026, 10, 20, 8))).toEqual(
       getDailyWords(2, new Date(2026, 10, 20, 22)),

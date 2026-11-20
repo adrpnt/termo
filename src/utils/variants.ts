@@ -12,6 +12,7 @@ export interface Variant {
 export const VARIANTS: Record<BoardCount, Variant> = {
   1: { boardCount: 1, maxGuesses: MAX_GUESSES, storagePrefix: "termo" },
   2: { boardCount: 2, maxGuesses: 7, storagePrefix: "termo:2" },
+  4: { boardCount: 4, maxGuesses: 9, storagePrefix: "termo:4" },
 };
 
 export const BOARD_COUNTS = Object.keys(VARIANTS).map(Number) as BoardCount[];

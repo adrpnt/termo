@@ -29,6 +29,16 @@ describe("getGameStatus", () => {
     expect(getGameStatus(getBoards(solutions, ["carne", "praça"]), 2, 7)).toBe("won");
   });
 
+  it("vence com quatro palavras quando a última delas é descoberta", () => {
+    const solutions = ["carne", "praça", "mundo", "livro"];
+    expect(getGameStatus(getBoards(solutions, ["carne", "praça", "mundo"]), 3, 9)).toBe(
+      "playing",
+    );
+    expect(
+      getGameStatus(getBoards(solutions, ["livro", "carne", "praça", "mundo"]), 4, 9),
+    ).toBe("won");
+  });
+
   it("perde ao esgotar as tentativas com alguma palavra sem descobrir", () => {
     const guesses = ["carne", "porta", "mundo", "livro", "tempo", "festa", "noite"];
     expect(getGameStatus(getBoards(["carne", "praça"], guesses), 7, 7)).toBe("lost");

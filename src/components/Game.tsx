@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Header } from "./Header";
 import { Board } from "./Board";
+import type { TileSize } from "./Tile";
 import { Keyboard } from "./Keyboard";
 import { Toast } from "./Toast";
 import { HelpModal } from "./HelpModal";
@@ -10,6 +11,16 @@ import type { BoardCount } from "../types";
 import type { Variant } from "../utils/variants";
 
 const LETTER_KEY_RE = /^[a-z]$/i;
+
+const tileSizes: Record<BoardCount, TileSize> = { 1: "lg", 2: "md", 4: "sm" };
+
+// Com 4 palavras os quadros ficam em grade 2x2 até o breakpoint lg e em uma
+// linha a partir dele. O Keyboard divide as teclas seguindo a mesma regra.
+const boardsLayout: Record<BoardCount, string> = {
+  1: "flex items-center justify-center",
+  2: "flex items-center justify-center gap-[max(0.75rem,2.5vw)]",
+  4: "grid grid-cols-2 place-content-center gap-x-[max(0.75rem,2.5vw)] gap-y-[1.5dvh] lg:grid-cols-4 lg:gap-x-[2vw]",
+};
 
 interface GameProps {
   variant: Variant;
@@ -82,7 +93,7 @@ export function Game({ variant, onChangeBoardCount }: GameProps) {
       />
 
       <main className="flex min-h-0 flex-1 flex-col items-center justify-between gap-1 overflow-y-auto py-1">
-        <div className="flex min-h-0 flex-1 items-center justify-center gap-[max(0.75rem,2.5vw)] px-2 py-2 sm:px-3">
+        <div className={`flex-1 px-2 py-2 sm:px-3 ${boardsLayout[boardCount]}`}>
           {boards.map((board, index) => (
             <Board
               key={index}
@@ -96,7 +107,7 @@ export function Game({ variant, onChangeBoardCount }: GameProps) {
               wordLength={wordLength}
               maxGuesses={maxGuesses}
               isShaking={isShaking}
-              size={boardCount === 1 ? "lg" : "md"}
+              size={tileSizes[boardCount]}
             />
           ))}
         </div>
