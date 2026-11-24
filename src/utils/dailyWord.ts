@@ -1,36 +1,54 @@
-import { SOLUTIONS } from "../data/words";
+import { SOLUTIONS, SOLUTIONS_BASE, SOLUTIONS_CHANGES } from "../data/words";
+import { getSolutionsOn } from "./solutionsBank";
+
+// O dia do desafio segue o horário de Brasília para todos, independente do
+// fuso do aparelho: assim quem joga de outro fuso recebe as mesmas palavras.
+const DAILY_TIME_ZONE = "America/Sao_Paulo";
 
 // Data de referência (dia 0 do desafio diário).
-const EPOCH = new Date(2024, 0, 1);
+const EPOCH_UTC = Date.UTC(2024, 0, 1);
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+const dayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: DAILY_TIME_ZONE,
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
+
+/** Ano, mês (1-12) e dia da data no fuso do desafio diário. */
+function getDailyDateParts(date: Date): { year: number; month: number; day: number } {
+  const parts = dayFormatter.formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return { year: get("year"), month: get("month"), day: get("day") };
 }
 
 /** Número de dias corridos desde a data de referência. */
 export function getDayNumber(date: Date = new Date()): number {
-  const start = startOfDay(EPOCH).getTime();
-  const current = startOfDay(date).getTime();
-  return Math.round((current - start) / 86_400_000);
+  const { year, month, day } = getDailyDateParts(date);
+  return Math.round((Date.UTC(year, month - 1, day) - EPOCH_UTC) / 86_400_000);
 }
 
 /** Chave única do dia, usada para persistência (ex.: "2026-08-08"). */
 export function getDayKey(date: Date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const { year, month, day } = getDailyDateParts(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-/** Índice determinístico da palavra do dia dentro do banco de soluções. */
-export function getDailyWordIndex(date: Date = new Date()): number {
-  const dayNumber = getDayNumber(date);
-  return ((dayNumber % SOLUTIONS.length) + SOLUTIONS.length) % SOLUTIONS.length;
+/**
+ * Banco de respostas em vigor no dia. Mudanças no banco só valem a partir da
+ * data registrada nelas, então um deploy não troca as palavras de um dia que
+ * já começou.
+ */
+export function getDailySolutions(date: Date = new Date()): string[] {
+  return getSolutionsOn(SOLUTIONS_BASE, SOLUTIONS_CHANGES, getDayKey(date));
 }
 
 /** Palavra do dia (sempre a mesma para todos, no mesmo dia). */
 export function getDailyWord(date: Date = new Date()): string {
-  return SOLUTIONS[getDailyWordIndex(date)];
+  const solutions = getDailySolutions(date);
+  const dayNumber = getDayNumber(date);
+  return solutions[((dayNumber % solutions.length) + solutions.length) % solutions.length];
 }
 
 /** Gerador pseudoaleatório determinístico (mulberry32) a partir de uma semente. */
@@ -45,10 +63,15 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-/** Sorteia `count` palavras distintas do banco, fora das excluídas. */
-function pickWords(count: number, random: () => number, exclude: string[]): string[] {
-  const available = SOLUTIONS.filter((word) => !exclude.includes(word));
-  const pool = available.length >= count ? available : [...SOLUTIONS];
+/** Sorteia `count` palavras distintas de `solutions`, fora das excluídas. */
+function pickWords(
+  solutions: readonly string[],
+  count: number,
+  random: () => number,
+  exclude: string[],
+): string[] {
+  const available = solutions.filter((word) => !exclude.includes(word));
+  const pool = available.length >= count ? available : [...solutions];
   const picked: string[] = [];
   while (picked.length < count) {
     const index = Math.floor(random() * pool.length);
@@ -68,10 +91,10 @@ export function getDailyWords(count: number, date: Date = new Date()): string[] 
   const dailyWord = getDailyWord(date);
   if (count === 1) return [dailyWord];
   const random = seededRandom(getDayNumber(date) * 1_000 + count);
-  return pickWords(count, random, [dailyWord]);
+  return pickWords(getDailySolutions(date), count, random, [dailyWord]);
 }
 
 /** Palavras aleatórias para o modo infinito, evitando repetir as da partida anterior. */
 export function getRandomWords(count: number, exclude: string[] = []): string[] {
-  return pickWords(count, Math.random, exclude);
+  return pickWords(SOLUTIONS, count, Math.random, exclude);
 }

@@ -54,7 +54,7 @@ estatísticas, nos dois modos (Diário e Infinito).
 
 ```text
 src/
-  data/words.ts        banco de palavras (soluções + palavras extras aceitas)
+  data/words.ts        banco de palavras (respostas + palavras extras aceitas)
   data/*Extra.ts       listas geradas a partir do fserb/pt-br
   utils/                normalização de acentos, dicionário, palavra do dia,
                          avaliação de tentativas, tabuleiros e variantes
@@ -69,8 +69,9 @@ scripts/
 
 ## Banco de palavras
 
-- `SOLUTIONS` (`src/data/words.ts`): ~200 palavras comuns, curadas à mão,
-  sorteáveis como resposta (palavra do dia / modo infinito).
+- `SOLUTIONS_BASE` e `SOLUTIONS_CHANGES` (`src/data/words.ts`): ~230
+  palavras comuns, curadas à mão, sorteáveis como resposta (palavra do dia /
+  modo infinito). Veja abaixo como mudar essa lista.
 - `EXTRA_VALID` (`src/data/words.ts`): palavras adicionais aceitas como
   tentativa, mas nunca sorteadas como resposta.
 - `LEXICO_EXTRA` (`src/data/lexicoExtra.ts`): palavras de 5 letras do léxico
@@ -104,7 +105,28 @@ O script `scripts/build-words.ts` baixa os arquivos `lexico`, `conjugações` e
 - mantém uma única grafia por palavra sem acento (ex.: "carne" e "carnê"), a
   mais comum no corpus, já que o teclado do jogo não tem acentos.
 
-Para aceitar uma palavra que ainda é recusada, adicione-a a `SOLUTIONS` (se
-for uma boa resposta) ou `EXTRA_VALID` (se for só para ser aceita como
-tentativa). Se for um padrão de flexão que falta, ajuste as regras em
-`scripts/wordlist.ts` e rode `npm run build:words`.
+Para aceitar uma palavra que ainda é recusada, registre-a como resposta em
+`SOLUTIONS_CHANGES` (se for uma boa resposta) ou adicione-a a `EXTRA_VALID`
+(se for só para ser aceita como tentativa). Se for um padrão de flexão que
+falta, ajuste as regras em `scripts/wordlist.ts` e rode `npm run build:words`.
+
+### Mudando as respostas
+
+As palavras do modo diário são as mesmas para todo mundo no dia, e o dia
+segue o horário de Brasília. Para isso continuar valendo depois de um deploy,
+o banco de respostas não é editado diretamente:
+
+- `SOLUTIONS_BASE` é o banco usado desde o início e não deve ser alterado. Um
+  teste falha se a lista mudar.
+- Para adicionar ou remover respostas, registre a mudança em
+  `SOLUTIONS_CHANGES`, em ordem cronológica, com o primeiro dia em que ela
+  vale:
+
+  ```ts
+  { from: "2027-01-10", added: ["nuvem"], removed: ["vulgo"] }
+  ```
+
+  Use uma data posterior ao deploy. Até essa data, o modo diário continua
+  sorteando com o banco anterior, então as palavras de um dia que já começou
+  nunca mudam. O modo infinito usa o banco com todas as mudanças aplicadas.
+- Respostas removidas continuam aceitas como tentativa.
