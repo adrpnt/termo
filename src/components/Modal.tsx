@@ -9,12 +9,12 @@ interface ModalProps {
 export function Modal({ title, onClose, children }: ModalProps) {
   return (
     <div
-      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-(--color-overlay) p-4 backdrop-blur-sm"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="animate-modal-in w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 text-white shadow-[var(--shadow-lg)]"
+        className="animate-modal-in w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 text-(--color-text) shadow-[var(--shadow-lg)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -26,7 +26,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-xl leading-none text-(--color-text-muted) transition-colors hover:bg-(--color-hover) hover:text-(--color-text)"
           >
             ×
           </button>

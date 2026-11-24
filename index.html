@@ -13,6 +13,25 @@
       rel="stylesheet"
     />
     <title>Termo</title>
+    <script>
+      // Aplica o tema antes da primeira pintura para não piscar o tema errado.
+      // Mesma regra de src/utils/theme.ts: escolha salva ou, sem ela, o sistema.
+      (function () {
+        var theme;
+        try {
+          theme = localStorage.getItem("termo:theme");
+        } catch (e) {}
+        if (theme !== "light" && theme !== "dark") {
+          var prefersLight =
+            window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+          theme = prefersLight ? "light" : "dark";
+        }
+        document.documentElement.dataset.theme = theme;
+        if (theme === "light") {
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#ffffff");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

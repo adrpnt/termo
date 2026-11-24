@@ -18,7 +18,7 @@ const ROWS = [
 const statusClasses: Record<LetterStatus, string> = {
   correct: "bg-[var(--color-correct)] text-white",
   present: "bg-[var(--color-present)] text-white",
-  absent: "bg-[var(--color-absent)] text-white/50",
+  absent: "bg-[var(--color-absent)] text-(--color-key-absent-text)",
 };
 
 const statusColors: Record<LetterStatus, string> = {
@@ -66,7 +66,7 @@ export function Keyboard({
           key={key}
           type="button"
           onClick={onEnter}
-          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-[10px] text-white hover:brightness-110 sm:min-w-12 sm:text-xs lg:min-w-16 lg:px-2 lg:text-sm`}
+          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-[10px] text-(--color-key-text) hover:brightness-110 sm:min-w-12 sm:text-xs lg:min-w-16 lg:px-2 lg:text-sm`}
         >
           Enviar
         </button>
@@ -79,7 +79,7 @@ export function Keyboard({
           type="button"
           onClick={onBackspace}
           aria-label="Apagar"
-          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-base text-white hover:brightness-110 sm:min-w-12 lg:min-w-16 lg:text-xl`}
+          className={`${keyBase} h-[clamp(1.75rem,4.5dvh,3rem)] min-w-10 bg-(--color-key) px-1.5 text-base text-(--color-key-text) hover:brightness-110 sm:min-w-12 lg:min-w-16 lg:text-xl`}
         >
           ⌫
         </button>
@@ -94,14 +94,22 @@ export function Keyboard({
     if (keyStatuses.length === 1) {
       const [status] = keyStatuses;
       className = `${letterBase} ${
-        status ? statusClasses[status] : "bg-(--color-key) text-white hover:brightness-110"
+        status ? statusClasses[status] : "bg-(--color-key) text-(--color-key-text) hover:brightness-110"
       }`;
     } else {
       const allAbsent = keyStatuses.every((status) => status === "absent");
+      const noneKnown = keyStatuses.every((status) => status === undefined);
+      // Com cores misturadas o fundo pode ter faixas claras (tecla sem dica no
+      // tema claro), por isso o texto branco ganha uma sombra para não sumir.
+      const textClass = noneKnown
+        ? "text-(--color-key-text)"
+        : allAbsent
+          ? "text-(--color-key-absent-text)"
+          : "text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.45)]";
       // Com 4 quadros a tecla segue o layout do Game: quadrantes na grade
       // 2x2 e faixas quando os quadros ficam em linha (a partir do lg).
       const isGrid = keyStatuses.length === 4;
-      className = `${letterBase} hover:brightness-110 ${allAbsent ? "text-white/50" : "text-white"} ${
+      className = `${letterBase} hover:brightness-110 ${textClass} ${
         isGrid ? "bg-(image:--key-grid) lg:bg-(image:--key-stripes)" : "bg-(image:--key-stripes)"
       }`;
       style = {

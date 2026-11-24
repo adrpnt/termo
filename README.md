@@ -50,6 +50,10 @@ quantidade no seletor ao lado do botão de ajuda:
 Cada quantidade de palavras tem sua própria partida salva e suas próprias
 estatísticas, nos dois modos (Diário e Infinito).
 
+O jogo tem tema claro e escuro. Na primeira visita ele segue o tema do
+sistema; o botão de sol/lua no topo alterna entre os dois e a escolha fica
+salva no navegador.
+
 ## Estrutura
 
 ```text
@@ -58,7 +62,7 @@ src/
   data/*Extra.ts       listas geradas a partir do fserb/pt-br
   utils/                normalização de acentos, dicionário, palavra do dia,
                          avaliação de tentativas, tabuleiros e variantes
-                         (quantidade de palavras e tentativas)
+                         (quantidade de palavras e tentativas), tema
   hooks/useGame.ts       estado principal do jogo
   hooks/useStats.ts      estatísticas e sequência (streak)
   components/            Game, Board, Tile, Keyboard, modais, toasts

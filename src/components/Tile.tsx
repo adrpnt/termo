@@ -46,17 +46,17 @@ export function Tile({
 
   const emptyClasses =
     isFilled || isActive
-      ? "border-[var(--color-border-strong)] text-white"
-      : "border-[var(--color-border)] text-white";
+      ? "border-[var(--color-border-strong)] text-(--color-text)"
+      : "border-[var(--color-border)] text-(--color-text)";
 
   const cursorClasses = isCursor
-    ? "border-white bg-white/5 shadow-[0_0_0_3px_rgba(255,255,255,0.12)]"
+    ? "border-(--color-cursor) bg-(--color-hover) shadow-[0_0_0_3px_var(--color-cursor-ring)]"
     : "";
 
   const className = status
     ? `${base} ${statusClasses[status]} animate-flip`
     : `${base} ${emptyClasses} ${cursorClasses} ${isFilled ? "animate-pop" : ""} ${
-        isClickable ? "cursor-pointer hover:border-white/40" : ""
+        isClickable ? "cursor-pointer hover:border-(--color-tile-hover)" : ""
       }`;
 
   return (

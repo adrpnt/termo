@@ -9,6 +9,7 @@ import { StatsModal } from "./StatsModal";
 import { useGame } from "../hooks/useGame";
 import type { BoardCount } from "../types";
 import type { Variant } from "../utils/variants";
+import type { Theme } from "../utils/theme";
 
 const LETTER_KEY_RE = /^[a-z]$/i;
 
@@ -25,9 +26,11 @@ const boardsLayout: Record<BoardCount, string> = {
 interface GameProps {
   variant: Variant;
   onChangeBoardCount: (boardCount: BoardCount) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
-export function Game({ variant, onChangeBoardCount }: GameProps) {
+export function Game({ variant, onChangeBoardCount, theme, onToggleTheme }: GameProps) {
   const { boardCount } = variant;
   const {
     mode,
@@ -88,6 +91,8 @@ export function Game({ variant, onChangeBoardCount }: GameProps) {
         onSwitchMode={switchMode}
         boardCount={boardCount}
         onChangeBoardCount={onChangeBoardCount}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
         onOpenHelp={() => setIsHelpOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
       />
