@@ -1,25 +1,37 @@
 import { SOLUTIONS } from "../data/words";
 
-// Data de referência (dia 0 do desafio diário).
-const EPOCH = new Date(2024, 0, 1);
+// O dia do desafio segue o horário de Brasília para todos, independente do
+// fuso do aparelho: assim quem joga de outro fuso recebe as mesmas palavras.
+const DAILY_TIME_ZONE = "America/Sao_Paulo";
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+// Data de referência (dia 0 do desafio diário).
+const EPOCH_UTC = Date.UTC(2024, 0, 1);
+
+const dayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: DAILY_TIME_ZONE,
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
+
+/** Ano, mês (1-12) e dia da data no fuso do desafio diário. */
+function getDailyDateParts(date: Date): { year: number; month: number; day: number } {
+  const parts = dayFormatter.formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return { year: get("year"), month: get("month"), day: get("day") };
 }
 
 /** Número de dias corridos desde a data de referência. */
 export function getDayNumber(date: Date = new Date()): number {
-  const start = startOfDay(EPOCH).getTime();
-  const current = startOfDay(date).getTime();
-  return Math.round((current - start) / 86_400_000);
+  const { year, month, day } = getDailyDateParts(date);
+  return Math.round((Date.UTC(year, month - 1, day) - EPOCH_UTC) / 86_400_000);
 }
 
 /** Chave única do dia, usada para persistência (ex.: "2026-08-08"). */
 export function getDayKey(date: Date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const { year, month, day } = getDailyDateParts(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 /** Índice determinístico da palavra do dia dentro do banco de soluções. */

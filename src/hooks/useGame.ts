@@ -63,7 +63,7 @@ function saveMode(mode: GameMode) {
   }
 }
 
-function loadGameForMode(mode: GameMode, variant: Variant, dayKey: string): GameState {
+function loadGameForMode(mode: GameMode, variant: Variant, today: Date): GameState {
   if (mode === "random") {
     return (
       loadGame(randomStorageKey(variant), variant) ?? {
@@ -73,8 +73,8 @@ function loadGameForMode(mode: GameMode, variant: Variant, dayKey: string): Game
     );
   }
   return (
-    loadGame(dailyStorageKey(variant, dayKey), variant) ?? {
-      solutions: getDailyWords(variant.boardCount),
+    loadGame(dailyStorageKey(variant, getDayKey(today)), variant) ?? {
+      solutions: getDailyWords(variant.boardCount, today),
       guesses: [],
     }
   );
@@ -85,11 +85,14 @@ export function useGame(variant: Variant) {
   const { stats, recordResult } = useStats(variant);
   const [mode, setMode] = useState<GameMode>(() => loadMode());
 
-  const dayKey = useMemo(() => getDayKey(), []);
-  const dayNumber = useMemo(() => getDayNumber(), []);
+  // Um único instante de referência, para a chave salva e as palavras do dia
+  // nunca caírem em dias diferentes perto da meia-noite.
+  const today = useMemo(() => new Date(), []);
+  const dayKey = useMemo(() => getDayKey(today), [today]);
+  const dayNumber = useMemo(() => getDayNumber(today), [today]);
 
   const [game, setGame] = useState<GameState>(() =>
-    loadGameForMode(loadMode(), variant, dayKey),
+    loadGameForMode(loadMode(), variant, today),
   );
   const { solutions, guesses } = game;
   const [currentLetters, setCurrentLetters] = useState<string[]>(() =>
@@ -148,9 +151,9 @@ export function useGame(variant: Variant) {
       setMode(nextMode);
       saveMode(nextMode);
       resetInput();
-      setGame(loadGameForMode(nextMode, variant, dayKey));
+      setGame(loadGameForMode(nextMode, variant, today));
     },
-    [variant, dayKey, resetInput],
+    [variant, today, resetInput],
   );
 
   const setCursorPosition = useCallback(

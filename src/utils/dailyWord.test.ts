@@ -1,9 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SOLUTIONS } from "../data/words";
-import { getDailyWord, getDailyWords, getRandomWords } from "./dailyWord";
+import {
+  getDailyWord,
+  getDailyWords,
+  getDayKey,
+  getDayNumber,
+  getRandomWords,
+} from "./dailyWord";
+
+/** Executa `fn` com o processo simulando o fuso horário de outro aparelho. */
+function withTimeZone<T>(timeZone: string, fn: () => T): T {
+  vi.stubEnv("TZ", timeZone);
+  try {
+    return fn();
+  } finally {
+    vi.unstubAllEnvs();
+  }
+}
 
 describe("getDailyWords", () => {
-  const date = new Date(2026, 10, 20);
+  const date = new Date("2026-11-20T12:00:00-03:00");
 
   it("usa a palavra do dia de sempre com um tabuleiro", () => {
     expect(getDailyWords(1, date)).toEqual([getDailyWord(date)]);
@@ -27,14 +43,53 @@ describe("getDailyWords", () => {
   });
 
   it("devolve as mesmas palavras no mesmo dia", () => {
-    expect(getDailyWords(2, new Date(2026, 10, 20, 8))).toEqual(
-      getDailyWords(2, new Date(2026, 10, 20, 22)),
+    expect(getDailyWords(2, new Date("2026-11-20T08:00:00-03:00"))).toEqual(
+      getDailyWords(2, new Date("2026-11-20T22:00:00-03:00")),
     );
   });
 
   it("muda as palavras de um dia para o outro", () => {
-    expect(getDailyWords(2, new Date(2026, 10, 20))).not.toEqual(
-      getDailyWords(2, new Date(2026, 10, 21)),
+    expect(getDailyWords(2, new Date("2026-11-20T12:00:00-03:00"))).not.toEqual(
+      getDailyWords(2, new Date("2026-11-21T12:00:00-03:00")),
+    );
+  });
+
+  it("devolve as mesmas palavras para aparelhos em fusos diferentes", () => {
+    const now = new Date("2026-11-20T22:30:00-03:00");
+    const timeZones = ["America/Sao_Paulo", "Europe/Lisbon", "Asia/Tokyo", "America/Los_Angeles"];
+    const results = timeZones.map((timeZone) =>
+      withTimeZone(timeZone, () => [1, 2, 4].map((count) => getDailyWords(count, now))),
+    );
+    for (const result of results) {
+      expect(result).toEqual(results[0]);
+    }
+  });
+});
+
+describe("getDayKey", () => {
+  it("segue o horário de Brasília, mesmo quando já é outro dia no fuso do aparelho", () => {
+    const now = new Date("2026-11-20T23:30:00-03:00");
+    expect(withTimeZone("Asia/Tokyo", () => getDayKey(now))).toBe("2026-11-20");
+    expect(withTimeZone("Europe/Lisbon", () => getDayKey(now))).toBe("2026-11-20");
+  });
+
+  it("vira o dia à meia-noite de Brasília", () => {
+    expect(getDayKey(new Date("2026-11-20T23:59:59-03:00"))).toBe("2026-11-20");
+    expect(getDayKey(new Date("2026-11-21T00:00:00-03:00"))).toBe("2026-11-21");
+  });
+});
+
+describe("getDayNumber", () => {
+  it("conta os dias desde 1º de janeiro de 2024 no horário de Brasília", () => {
+    expect(getDayNumber(new Date("2024-01-01T00:00:00-03:00"))).toBe(0);
+    expect(getDayNumber(new Date("2024-01-02T02:00:00Z"))).toBe(0);
+    expect(getDayNumber(new Date("2024-01-02T03:00:00Z"))).toBe(1);
+  });
+
+  it("mantém a mesma contagem em qualquer fuso do aparelho", () => {
+    const now = new Date("2026-11-20T22:30:00-03:00");
+    expect(withTimeZone("Asia/Tokyo", () => getDayNumber(now))).toBe(
+      withTimeZone("America/Los_Angeles", () => getDayNumber(now)),
     );
   });
 });
