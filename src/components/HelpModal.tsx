@@ -12,7 +12,7 @@ export function HelpModal({ boardCount, maxGuesses, onClose }: HelpModalProps) {
 
   return (
     <Modal title="Como jogar" onClose={onClose}>
-      <div className="space-y-5 text-sm leading-relaxed text-white/90">
+      <div className="space-y-5 text-sm leading-relaxed text-(--color-text)">
         {isMulti ? (
           <p>
             Descubra as {boardCount} palavras certas em {maxGuesses} tentativas. Cada
@@ -65,7 +65,7 @@ export function HelpModal({ boardCount, maxGuesses, onClose }: HelpModalProps) {
             <Tile letter="A" />
           </div>
           <p>
-            A letra <strong className="text-white">G</strong> não faz parte da
+            A letra <strong>G</strong> não faz parte da
             palavra.
           </p>
         </div>

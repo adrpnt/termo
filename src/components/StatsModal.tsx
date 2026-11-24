@@ -13,7 +13,7 @@ export function StatsModal({ stats, boardCount, onClose }: StatsModalProps) {
 
   return (
     <Modal title="Estatísticas" onClose={onClose}>
-      <div className="grid grid-cols-4 gap-2 rounded-lg bg-white/[3%] p-3 text-center">
+      <div className="grid grid-cols-4 gap-2 rounded-lg bg-(--color-hover) p-3 text-center">
         <Stat label="Jogadas" value={stats.played} />
         <Stat label="% Vitórias" value={winRate} />
         <Stat label="Sequência atual" value={stats.currentStreak} />

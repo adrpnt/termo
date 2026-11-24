@@ -6,8 +6,8 @@ interface ToastProps {
 
 const typeStyles: Record<ToastType, { bg: string; icon: string }> = {
   success: { bg: "bg-[var(--color-correct)] text-white", icon: "✓" },
-  error: { bg: "bg-white text-black", icon: "!" },
-  info: { bg: "bg-white text-black", icon: "" },
+  error: { bg: "bg-(--color-inverse) text-(--color-inverse-text)", icon: "!" },
+  info: { bg: "bg-(--color-inverse) text-(--color-inverse-text)", icon: "" },
 };
 
 export function Toast({ toasts }: ToastProps) {
@@ -24,7 +24,7 @@ export function Toast({ toasts }: ToastProps) {
             className={`animate-toast flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold shadow-[var(--shadow-md)] ${style.bg}`}
           >
             {style.icon && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-black/15 text-[10px] leading-none">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/15 text-[10px] leading-none">
                 {style.icon}
               </span>
             )}
