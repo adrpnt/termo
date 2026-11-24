@@ -1,5 +1,7 @@
 // Banco de palavras de 5 letras em português.
-// SOLUTIONS: palavras comuns usadas como resposta (palavra do dia / modo aleatório).
+// SOLUTIONS_BASE: palavras comuns usadas como resposta (palavra do dia / modo aleatório).
+// SOLUTIONS_CHANGES: mudanças no banco de respostas, cada uma com a data em que
+// passa a valer no modo diário. SOLUTIONS é o banco com todas elas aplicadas.
 // EXTRA_VALID: palavras adicionais aceitas como tentativa, mas não sorteadas como resposta.
 // LEXICO_EXTRA: milhares de palavras adicionais (fonte externa, ver lexicoExtra.ts),
 // também aceitas apenas como tentativa.
@@ -12,8 +14,13 @@
 import { LEXICO_EXTRA } from "./lexicoExtra";
 import { CONJUGACOES_EXTRA } from "./conjugacoesExtra";
 import { FLEXOES_EXTRA } from "./flexoesExtra";
+import { getLatestSolutions, type SolutionsChange } from "../utils/solutionsBank";
 
-export const SOLUTIONS: string[] = [
+// Banco de respostas usado pelo modo diário desde o início. Não edite esta
+// lista: as palavras de cada dia são sorteadas a partir dela, e mudá-la troca
+// as palavras de hoje para quem abrir o jogo depois do deploy. Para adicionar
+// ou remover respostas, registre a mudança em SOLUTIONS_CHANGES.
+export const SOLUTIONS_BASE: readonly string[] = [
   "turma",
   "casal",
   "figos",
@@ -247,6 +254,15 @@ export const SOLUTIONS: string[] = [
   "tórax",
 ];
 
+// Mudanças no banco de respostas, em ordem cronológica. `from` é o primeiro
+// dia (AAAA-MM-DD, horário de Brasília) em que a mudança vale no modo diário.
+// Use uma data posterior ao deploy: as palavras de um dia que já começou não
+// podem mudar. Exemplo:
+//   { from: "2027-01-10", added: ["nuvem"], removed: ["vulgo"] }
+export const SOLUTIONS_CHANGES: readonly SolutionsChange[] = [];
+
+export const SOLUTIONS: string[] = getLatestSolutions(SOLUTIONS_BASE, SOLUTIONS_CHANGES);
+
 export const EXTRA_VALID: string[] = [
   "abril",
   "assim",
@@ -321,7 +337,10 @@ export const EXTRA_VALID: string[] = [
 
 export const ALL_WORDS: string[] = Array.from(
   new Set([
-    ...SOLUTIONS,
+    // Respostas removidas continuam aceitas: quem começou a partida no dia
+    // anterior à remoção ainda precisa conseguir digitar a palavra.
+    ...SOLUTIONS_BASE,
+    ...SOLUTIONS_CHANGES.flatMap((change) => change.added ?? []),
     ...EXTRA_VALID,
     ...LEXICO_EXTRA,
     ...CONJUGACOES_EXTRA,
