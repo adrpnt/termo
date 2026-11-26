@@ -6,8 +6,8 @@ export const THEME_STORAGE_KEY = "termo:theme";
 
 /** Cor da barra do navegador no celular, igual ao `--color-bg` de cada tema. */
 export const THEME_COLORS: Record<Theme, string> = {
-  dark: "#121213",
-  light: "#ffffff",
+  dark: "#1f2024",
+  light: "#f3f1ec",
 };
 
 function isTheme(value: unknown): value is Theme {
