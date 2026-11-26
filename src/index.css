@@ -35,7 +35,6 @@
   --color-cursor: #ececee;
   --color-cursor-ring: rgba(255, 255, 255, 0.12);
   --color-tile-hover: rgba(255, 255, 255, 0.4);
-  --color-glow: rgba(83, 141, 78, 0.12);
 
   --color-danger: #e5534b;
 
@@ -73,7 +72,6 @@
   --color-cursor: #24231f;
   --color-cursor-ring: rgba(0, 0, 0, 0.08);
   --color-tile-hover: rgba(0, 0, 0, 0.35);
-  --color-glow: rgba(83, 141, 78, 0.08);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -95,12 +93,6 @@ body {
   font-feature-settings: "cv11", "ss01";
   -webkit-tap-highlight-color: transparent;
   background-color: var(--color-bg);
-  background-image: radial-gradient(
-    ellipse 900px 500px at 50% -10%,
-    var(--color-glow),
-    transparent 60%
-  );
-  background-repeat: no-repeat;
 }
 
 ::selection {
